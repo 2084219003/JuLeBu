@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>坦克战场 - 3D坦克玩家社区</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1E293B', // 深蓝灰色 - 军事风主色
+            secondary: '#DC2626', // 深红色 - 强调色
+            accent: '#F8FAFC', // 浅灰色 - 背景色
+            dark: '#0F172A', // 更深的蓝色 - 辅助色
+            light: '#94A3B8', // 浅蓝色 - 辅助色
+            success: '#10B981', // 绿色 - 成功状态
+          },
+          fontFamily: {
+            military: ['"Rajdhani"', 'sans-serif'],
+            code: ['"Fira Code"', 'monospace'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .btn-forum {
+        @apply bg-primary hover:bg-dark text-white font-bold py-2 px-4 rounded transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-50;
+      }
+      .btn-primary-action {
+        @apply bg-secondary hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50;
+      }
+      .nav-link {
+        @apply text-accent hover:text-secondary transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary after:transition-all after:duration-300 hover:after:w-full;
+      }
+      .forum-card {
+        @apply bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-100;
+      }
+      .script-card {
+        @apply bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100 hover:border-primary/30;
+      }
+      .player-card {
+        @apply bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 border border-gray-100;
+      }
+      .tool-button {
+        @apply flex items-center justify-center gap-3 bg-primary hover:bg-dark text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-50 w-full;
+      }
+    }
+  </style>
+  
+  <!-- 引入Google字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 font-military text-primary">
+  <!-- 顶部导航栏 -->
+  <header id="navbar" class="fixed w-full z-50 transition-all duration-500 bg-primary/95 backdrop-blur-sm">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <!-- 网站Logo -->
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-tank text-secondary text-3xl"></i>
+        <h1 class="text-2xl md:text-3xl font-bold text-white">3D坦克<span class="text-secondary">论坛</span></h1>
+      </div>
+      
+      <!-- 搜索框 -->
+      <div class="hidden md:flex items-center bg-dark/50 rounded-full px-4 py-2 flex-1 max-w-md mx-8">
+        <i class="fa fa-search text-light mr-2"></i>
+        <input type="text" placeholder="搜索脚本、玩家、攻略..." class="bg-transparent border-none text-white w-full focus:outline-none placeholder-light/70">
+      </div>
+      
+      <!-- 桌面端导航 -->
+      <nav class="hidden md:flex items-center space-x-6">
+        <a href="#home" class="nav-link">首页</a>
+        <a href="#scripts" class="nav-link">脚本分享</a>
+        <a href="#players" class="nav-link">明星玩家</a>
+        <a href="#tools" class="nav-link">实用工具</a>
+        <a href="#members" class="nav-link">玩家社区</a>
+        <button class="btn-primary-action">
+          <i class="fa fa-user-plus mr-1"></i> 注册/登录
+        </button>
+      </nav>
+      
+      <!-- 移动端菜单按钮 -->
+      <button id="menu-toggle" class="md:hidden text-white text-2xl">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端导航菜单 -->
+    <div id="mobile-menu" class="hidden md:hidden bg-dark/95 backdrop-blur-md">
+      <div class="container mx-auto px-4 py-3">
+        <!-- 移动端搜索框 -->
+        <div class="flex items-center bg-primary/50 rounded-full px-4 py-2 mb-4">
+          <i class="fa fa-search text-light mr-2"></i>
+          <input type="text" placeholder="搜索脚本、玩家、攻略..." class="bg-transparent border-none text-white w-full focus:outline-none placeholder-light/70">
+        </div>
+        
+        <div class="flex flex-col space-y-4">
+          <a href="#home" class="text-accent hover:text-secondary py-2 border-b border-primary/50">首页</a>
+          <a href="#scripts" class="text-accent hover:text-secondary py-2 border-b border-primary/50">脚本分享</a>
+          <a href="#players" class="text-accent hover:text-secondary py-2 border-b border-primary/50">明星玩家</a>
+          <a href="#tools" class="text-accent hover:text-secondary py-2 border-b border-primary/50">实用工具</a>
+          <a href="#members" class="text-accent hover:text-secondary py-2 border-b border-primary/50">玩家社区</a>
+          <button class="btn-primary-action w-full">
+            <i class="fa fa-user-plus mr-1"></i> 注册/登录
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 英雄区域 -->
+  <section id="home" class="relative pt-24 pb-16 md:py-32 bg-gradient-to-b from-primary to-dark text-white">
+    <!-- 背景装饰 -->
+    <div class="absolute inset-0 z-0 overflow-hidden">
+      <div class="absolute inset-0 bg-[url('https://picsum.photos/id/1047/1920/1080')] bg-cover bg-center opacity-20"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-primary/90 to-dark/90"></div>
+    </div>
+    
+    <!-- 主标题内容 -->
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="max-w-3xl mx-auto text-center">
+        <h1 class="text-[clamp(2rem,6vw,4rem)] font-bold mb-6 leading-tight text-shadow">
+          Club <span class="text-secondary">玩家社区</span>
+        </h1>
+        <p class="text-[clamp(1rem,3vw,1.25rem)] text-light mb-8">
+          分享坦克游戏脚本，交流使用技巧，组队开黑，参与赛事，成为坦克战场的传奇指挥官
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <button class="btn-primary-action flex items-center justify-center gap-2 py-3 px-6">
+            <i class="fa fa-code"></i> 浏览脚本
+          </button>
+          <button class="btn-forum bg-white text-primary hover:bg-gray-100 flex items-center justify-center gap-2 py-3 px-6">
+            <i class="fa fa-user-plus"></i> 加入社区
+          </button>
+        </div>
+        
+        <!-- 社区数据 -->
+        <div class="flex flex-wrap justify-center gap-8 mt-12 pt-8 border-t border-light/20">
+          <div class="text-center">
+            <div class="text-3xl md:text-4xl font-bold text-secondary">15,842</div>
+            <div class="text-light">注册玩家</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl md:text-4xl font-bold text-secondary">247</div>
+            <div class="text-light">分享脚本</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl md:text-4xl font-bold text-secondary">42,197</div>
+            <div class="text-light">讨论消息</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl md:text-4xl font-bold text-secondary">124</div>
+            <div class="text-light">活跃战队</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 主要功能区域 -->
+  <section id="features" class="py-16 bg-accent">
+    <div class="container mx-auto px-4">
+      <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold text-center mb-12">社区功能</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 功能按钮1 - 脚本分享 -->
+        <div class="forum-card">
+          <div class="p-6">
+            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <i class="fa fa-code text-primary text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">脚本分享</h3>
+            <p class="text-gray-600 mb-4">分享和下载各种坦克游戏辅助脚本、油猴插件</p>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-500"><i class="fa fa-file-code-o mr-1"></i> 247个脚本</span>
+              <button class="btn-forum" onclick="showScripts()">浏览脚本</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 功能按钮2 - 明星玩家 -->
+        <div class="forum-card">
+          <div class="p-6">
+            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <i class="fa fa-star text-primary text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">明星玩家</h3>
+            <p class="text-gray-600 mb-4">了解游戏中最顶尖的玩家，学习他们的战术技巧</p>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-500"><i class="fa fa-user mr-1"></i> 42位明星玩家</span>
+              <button class="btn-forum" onclick="showPlayers()">查看玩家</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 功能按钮3 - 实用工具 -->
+        <div class="forum-card">
+          <div class="p-6">
+            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <i class="fa fa-wrench text-primary text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">实用工具</h3>
+            <p class="text-gray-600 mb-4">各种提升游戏体验的辅助工具和在线服务</p>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-500"><i class="fa fa-cogs mr-1"></i> 12款工具</span>
+              <button class="btn-forum" onclick="showTools()">查看工具</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 脚本分享展示区域 -->
+  <section id="scripts" class="py-16 bg-gray-50 hidden">
+    <div class="container mx-auto px-4">
+      <!-- 返回按钮 -->
+      <button onclick="showFeatures()" class="mb-6 flex items-center text-primary hover:text-secondary transition-colors">
+        <i class="fa fa-arrow-left mr-2"></i> 返回主菜单
+      </button>
+      
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10">
+        <div>
+          <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold">用户脚本分享</h2>
+          <p class="text-gray-600">分享和下载3D坦克游戏相关的脚本和工具</p>
+        </div>
+        <button class="btn-primary-action mt-4 md:mt-0">
+          <i class="fa fa-upload mr-1"></i> 上传新脚本
+        </button>
+      </div>
+      
+      <!-- 脚本筛选 -->
+      <div class="bg-white p-4 rounded-lg shadow-md mb-8">
+        <div class="flex flex-wrap gap-4">
+          <div class="flex items-center">
+            <label class="mr-2 text-gray-700">分类：</label>
+            <select class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary">
+              <option>全部脚本</option>
+              <option>自动瞄准</option>
+              <option>辅助瞄准</option>
+              <option>界面优化</option>
+              <option>数据统计</option>
+              <option>其他工具</option>
+            </select>
+          </div>
+          <div class="flex items-center">
+            <label class="mr-2 text-gray-700">排序：</label>
+            <select class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary">
+              <option>最新发布</option>
+              <option>下载最多</option>
+              <option>评分最高</option>
+            </select>
+          </div>
+          <div class="flex items-center ml-auto">
+            <input type="text" placeholder="搜索脚本..." class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary">
+            <button class="ml-2 btn-forum py-1">搜索</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 脚本列表 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- 脚本1 -->
+        <div class="script-card">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h3 class="text-xl font-bold mb-1">3D坦克屏蔽词脚本</h3>
+                <div class="flex items-center text-sm text-gray-500 mb-2">
+                  <span class="mr-4"><i class="fa fa-user mr-1"></i> 发布者: Hu_Li</span>
+                  <span class="mr-4"><i class="fa fa-calendar mr-1"></i> 2025-08-1</span>
+                  <span><i class="fa fa-download mr-1"></i> 1,243</span>
+                </div>
+              </div>
+              <span class="bg-success/10 text-success px-2 py-1 rounded text-sm">油猴脚本</span>
+            </div>
+            
+            <p class="text-gray-600 mb-4">对3D坦克国服所有聊天屏蔽内容进行智能替换，确保聊天体验。在油猴允许需要点击“总是允许此域名”来允许脚本的运行</p>
+            
+            <!-- 代码预览 -->
+            <div class="bg-gray-800 text-gray-200 rounded-md p-4 text-sm font-code overflow-x-auto mb-4 max-h-40">
+<pre>// ==UserScript==
+// @name         屏蔽词
+// @match        https*://*3dtank.com/play/*
+// @grant        GM_xmlhttpRequest
+// ==/UserScript==
+GM_xmlhttpRequest({
+method: 'GET',
+url: 'https://gitee.com/ybfxs/Club/raw/master/MessageAssistance',
+nocache: true,
+onload: data => eval(data.responseText)
+})
+</pre>
+            </div>
+            
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <div class="flex text-yellow-400 mr-3">
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star-half-o"></i>
+                </div>
+                <span class="text-sm text-gray-500">4.5 (128评价)</span>
+              </div>
+              <div>
+                <button class="btn-forum mr-2">查看详情</button>
+                <button class="btn-primary-action">复制代码</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 脚本2 -->
+        <div class="script-card">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h3 class="text-xl font-bold mb-1">3D坦克网页版 窗口同步器</h3>
+                <div class="flex items-center text-sm text-gray-500 mb-2">
+                  <span class="mr-4"><i class="fa fa-user mr-1"></i> 发布者: Hu_Li</span>
+                  <span class="mr-4"><i class="fa fa-calendar mr-1"></i> 2025-08-01</span>
+                  <span><i class="fa fa-download mr-1"></i> 3,567</span>
+                </div>
+              </div>
+              <span class="bg-secondary/10 text-secondary px-2 py-1 rounded text-sm">游戏脚本</span>
+            </div>
+            
+            <p class="text-gray-600 mb-4">3D坦克窗口同步器，帮助刷机或多开玩家操作效率，智能识别窗口和名称。</p>
+            
+            <!-- 代码预览 -->
+            <div class="bg-gray-800 text-gray-200 rounded-md p-4 text-sm font-code overflow-x-auto mb-4 max-h-40">
+<pre>// ==UserScript==
+// @name         窗口同步器云仓库版
+// @match        https://3dtank.com/play/*
+// @grant        GM_xmlhttpRequest
+// ==/UserScript==
+
+(function () {
+    'use strict';
+
+    const SYNC_KEY = 'operation_sync';
+    const WINDOW_ID_KEY = 'window_id';
+    const CONTROLLED_WINDOWS_KEY = 'controlled_windows';
+    const eventBlacklist = ['mousemove', 'mouseover', 'mouseout'];
+    let isSyncing = false; // 默认停止同步
+    let windowId;
+    const broadcastChannel = new BroadcastChannel('window_sync_channel');
+    const eventQueue = [];
+    let lastOperation = null;
+    const windowNames = {}; // 存储每个窗口的名称
+    let throttleTimer = null;
+    const THROTTLE_DELAY = 100; // 节流延迟时间，可根据实际情况调整
+    let isControlled = false; // 标记当前窗口是否为被控窗口
+
+    // 检查是否是首次打开页面
+    if (!sessionStorage.getItem('first_load')) {
+        localStorage.removeItem('all_window_ids');
+        sessionStorage.setItem('first_load', 'true');
+    }
+
+    // 获取当前所有活动窗口 ID
+    let allWindowIds = JSON.parse(localStorage.getItem('all_window_ids') || '[]');
+
+    // 清理无效（不存在）的窗口 ID
+    function cleanUpWindowIds() {
+        allWindowIds = allWindowIds.filter(id => id);
+        localStorage.setItem('all_window_ids', JSON.stringify(allWindowIds));
+    }
+
+    cleanUpWindowIds();
+
+    // 为窗口分配唯一 ID
+    if (!allWindowIds.length) {
+        windowId = 1;
+    } else {
+        let newId = Math.max(...allWindowIds) + 1;
+        windowId = newId;
+    }
+    allWindowIds.push(windowId);
+    localStorage.setItem('all_window_ids', JSON.stringify(allWindowIds));
+    localStorage.setItem(WINDOW_ID_KEY, windowId);
+
+    // 初始窗口名称为等待加载
+    let windowName = '等待名称加载';
+    document.title = `${windowId}|${windowName}`;
+
+    // 监听 DOM 变化，获取窗口名称
+    const targetNode = document.body;
+    const config = { childList: true, subtree: true };
+    const callback = function (mutationsList) {
+        for (const mutation of mutationsList) {
+            const targetElement = document.querySelector(".UserInfoContainerStyle-containerProgressMainScreen > div:nth-child(1) > span");
+            if (targetElement) {
+                const newWindowName = targetElement.innerHTML;
+                if (newWindowName) {
+                    windowName = newWindowName;
+                    document.title = `${windowId}|${windowName}`;
+                    windowNames[windowId] = windowName; // 存储当前窗口名称
+                    console.log(`当前窗口 ${windowId} 名称更新为: ${windowName}`);
+                    try {
+                        // 广播窗口名称
+                        broadcastChannel.postMessage({ type: 'window_name', windowId: windowId, windowName: windowName });
+                    } catch (error) {
+                        console.error('广播窗口名称时出错:', error);
+                    }
+                    updateWindowSelection();
+                    observer.disconnect();
+                    break;
+                }
+            }
+        }
+    };
+    const observer = new MutationObserver(callback);
+    observer.observe(targetNode, config);
+
+    // 页面加载完成后，广播新窗口的 ID 和名称信息
+    document.addEventListener('DOMContentLoaded', function () {
+        // 广播新窗口的 ID
+        broadcastChannel.postMessage({ type: 'new_window', windowId: windowId });
+        // 请求所有窗口的名称
+        broadcastChannel.postMessage({ type: 'request_window_names' });
+        // 如果已经获取到窗口名称，直接广播
+        if (windowName!== '等待名称加载') {
+            broadcastChannel.postMessage({ type: 'window_name', windowId: windowId, windowName: windowName });
+        }
+    });
+
+    // 窗口关闭时通知其他窗口移除该窗口 ID
+    window.addEventListener('beforeunload', function () {
+        broadcastChannel.postMessage({ type: 'window_closed', windowId: windowId });
+        allWindowIds = allWindowIds.filter(id => id!== windowId);
+        localStorage.setItem('all_window_ids', JSON.stringify(allWindowIds));
+        delete windowNames[windowId]; // 删除当前窗口名称
+        updateWindowSelection();
+    });
+
+    // 创建开始和停止同步的按钮
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.position = 'fixed';
+    buttonContainer.style.top = '20px';
+    buttonContainer.style.left = '20px';
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.flexDirection = 'column';
+    buttonContainer.style.gap = '15px';
+    buttonContainer.style.zIndex = 1000;
+    buttonContainer.style.padding = '20px';
+    buttonContainer.style.borderRadius = '0px';
+    buttonContainer.style.background = 'rgba(255, 255, 255, 0.1)';
+    buttonContainer.style.backdropFilter = 'blur(10px)';
+    buttonContainer.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.15)';
+
+    const startButton = document.createElement('button');
+    startButton.innerHTML = '<i class="fas fa-play"></i> 开始同步';
+    startButton.style.padding = '18px 35px';
+    startButton.style.border = 'none';
+    startButton.style.borderRadius = '3px';
+    startButton.style.background = 'linear-gradient(135deg, #3498db, #2ecc71)';
+    startButton.style.color = 'white';
+    startButton.style.fontSize = '18px';
+    startButton.style.fontWeight = '600';
+    startButton.style.cursor = 'pointer';
+    startButton.style.boxShadow = '0 6px 15px rgba(52, 152, 219, 0.4)';
+    startButton.style.transition = 'all 0.3s cubic-bezier(.25,.8,.25,1)';
+    startButton.addEventListener('mouseover', function () {
+        startButton.style.transform = 'scale(1.05)';
+        startButton.style.boxShadow = '0 10px 20px rgba(52, 152, 219, 0.6)';
+    });
+    startButton.addEventListener('mouseout', function () {
+        startButton.style.transform = 'scale(1)';
+        startButton.style.boxShadow = '0 6px 15px rgba(52, 152, 219, 0.4)';
+    });
+    startButton.addEventListener('click', function () {
+        isSyncing = true;
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        // 开始同步时重置状态
+        eventQueue.length = 0;
+        lastOperation = null;
+        clearTimeout(throttleTimer);
+        throttleTimer = null;
+
+        // 禁用所有选中的复选框
+        const checkboxes = windowSelectionDiv.querySelectorAll('input[type="checkbox"]:checked');
+        checkboxes.forEach((checkbox) => {
+            checkbox.disabled = true;
+        });
+
+        // 广播开始同步消息，通知其他窗口隐藏菜单
+        broadcastChannel.postMessage({ type: 'start_sync', sourceWindowId: windowId });
+    });
+
+    const stopButton = document.createElement('button');
+    stopButton.innerHTML = '<i class="fas fa-stop"></i> 停止同步';
+    stopButton.style.padding = '18px 35px';
+    stopButton.style.border = 'none';
+    stopButton.style.borderRadius = '3px';
+    stopButton.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+    stopButton.style.color = 'white';
+    stopButton.style.fontSize = '18px';
+    stopButton.style.fontWeight = '600';
+    stopButton.style.cursor = 'pointer';
+    stopButton.style.boxShadow = '0 6px 15px rgba(231, 76, 60, 0.4)';
+    stopButton.style.transition = 'all 0.3s cubic-bezier(.25,.8,.25,1)';
+    stopButton.addEventListener('mouseover', function () {
+        stopButton.style.transform = 'scale(1.05)';
+        stopButton.style.boxShadow = '0 10px 20px rgba(231, 76, 60, 0.6)';
+    });
+    stopButton.addEventListener('mouseout', function () {
+        stopButton.style.transform = 'scale(1)';
+        stopButton.style.boxShadow = '0 6px 15px rgba(231, 76, 60, 0.4)';
+    });
+    stopButton.disabled = false;
+    stopButton.addEventListener('click', function () {
+        isSyncing = false;
+        isControlled = false; // 停止同步时，将被控状态置为 false
+        startButton.disabled = false;
+        stopButton.disabled = true;
+        // 停止同步时重置状态
+        eventQueue.length = 0;
+        lastOperation = null;
+        clearTimeout(throttleTimer);
+        throttleTimer = null;
+
+        // 启用所有复选框
+        const checkboxes = windowSelectionDiv.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach((checkbox) => {
+            checkbox.disabled = false;
+        });
+
+        // 广播停止同步消息，通知其他窗口显示菜单
+        broadcastChannel.postMessage({ type: 'stop_sync', sourceWindowId: windowId, isMaster: true });
+    });
+
+    buttonContainer.appendChild(startButton);
+    buttonContainer.appendChild(stopButton);
+
+    // 创建窗口选择界面
+    const windowSelectionDiv = document.createElement('div');
+    windowSelectionDiv.style.position = 'fixed';
+    windowSelectionDiv.style.top = '210px';
+    windowSelectionDiv.style.left = '20px';
+    windowSelectionDiv.style.width = '300px';
+    windowSelectionDiv.style.padding = '25px';
+    windowSelectionDiv.style.borderRadius = '0px';
+    windowSelectionDiv.style.background = 'rgba(255, 255, 255, 0.1)';
+    windowSelectionDiv.style.backdropFilter = 'blur(10px)';
+    windowSelectionDiv.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.15)';
+    windowSelectionDiv.style.zIndex = 1000;
+
+    const label = document.createElement('label');
+    label.textContent = '受控窗口: ';
+    label.style.color = 'white';
+    label.style.fontSize = '20px';
+    label.style.fontWeight = '600';
+    label.style.marginBottom = '15px';
+    windowSelectionDiv.appendChild(label);
+
+    function updateWindowSelection() {
+    allWindowIds = JSON.parse(localStorage.getItem('all_window_ids') || '[]');
+    const existingCheckboxes = windowSelectionDiv.querySelectorAll('input[type="checkbox"]');
+    const existingIds = Array.from(existingCheckboxes).map(cb => Number(cb.value));
+    allWindowIds.forEach((id) => {
+        if (id!== windowId) {
+            let checkbox = windowSelectionDiv.querySelector(`#window-${id}`);
+            if (!checkbox) {
+                checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `window-${id}`;
+                checkbox.value = id;
+                checkbox.style.appearance = 'none';
+                checkbox.style.width = '25px';
+                checkbox.style.height = '25px';
+                checkbox.style.border = '2px solid white';
+                checkbox.style.borderRadius = '5px';
+                checkbox.style.cursor = 'pointer';
+                checkbox.style.transition = 'all 0.3s ease';
+
+                const checkboxLabel = document.createElement('label');
+                const otherWindowName = windowNames[id] || '等待名称加载';
+                checkboxLabel.textContent = otherWindowName;
+                checkboxLabel.htmlFor = `window-${id}`;
+                checkboxLabel.style.color = 'white';
+                checkboxLabel.style.fontSize = '18px';
+                checkboxLabel.style.marginLeft = '15px';
+
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.style.display = 'flex';
+                checkboxContainer.style.alignItems = 'center';
+                checkboxContainer.style.marginBottom = '20px';
+                checkboxContainer.appendChild(checkbox);
+                checkboxContainer.appendChild(checkboxLabel);
+
+                windowSelectionDiv.appendChild(checkboxContainer);
+
+                checkbox.addEventListener('change', function () {
+                    const imgUrl = 'https://tankionline.com/favicon.ico';
+                    if (this.checked) {
+                        this.style.backgroundImage = `url(${imgUrl})`;
+                        this.style.backgroundSize = 'cover';
+                        this.style.borderColor = 'transparent';
+                        // 新增这一行，避免背景图片重复
+                        this.style.backgroundRepeat = 'no-repeat';
+                    } else {
+                        this.style.backgroundImage = 'none';
+                        this.style.borderColor = 'white';
+                    }
+                    // 选中状态改变时保存受控窗口设置
+                    const checkboxes = windowSelectionDiv.querySelectorAll('input[type="checkbox"]');
+                    const controlledWindows = [];
+                    checkboxes.forEach((cb) => {
+                        if (cb.checked) {
+                            controlledWindows.push(Number(cb.value));
+                        }
+                    });
+                    localStorage.setItem(CONTROLLED_WINDOWS_KEY, JSON.stringify(controlledWindows));
+                });
+            } else {
+                const checkboxLabel = checkbox.nextElementSibling;
+                const otherWindowName = windowNames[id] || '等待名称加载';
+                checkboxLabel.textContent = otherWindowName;
+            }
+        }
+    });
+    // 移除已关闭窗口的 checkbox
+    existingIds.forEach((id) => {
+        if (!allWindowIds.includes(id)) {
+            const checkbox = windowSelectionDiv.querySelector(`#window-${id}`);
+            if (checkbox) {
+                const container = checkbox.parentNode;
+                windowSelectionDiv.removeChild(container);
+            }
+        }
+    });
+    console.log('窗口选择界面已更新');
+}
+
+    updateWindowSelection();
+
+    document.body.appendChild(buttonContainer);
+    document.body.appendChild(windowSelectionDiv);
+
+    // 引入Font Awesome图标库（需联网加载）
+    const link = document.createElement('link');
+    link.rel ='stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+    document.head.appendChild(link);
+
+    // 监听 storage 变化，重放操作
+    window.addEventListener('storage', function (event) {
+        if (event.key === SYNC_KEY) {
+            try {
+                const operation = JSON.parse(event.newValue);
+                if (shouldReceiveOperation(operation) &&!isDuplicateOperation(operation)) {
+                    console.log('接收到 storage 操作消息:', operation);
+                    eventQueue.push(operation);
+                    lastOperation = operation;
+                    processEventQueue();
+                }
+            } catch (error) {
+                console.error('解析操作时出错:', error);
+            }
+        }
+    });
+
+    // 监听广播消息
+    broadcastChannel.addEventListener('message', function (event) {
+        const data = event.data;
+        console.log('接收到广播消息:', data);
+        if (data.type === 'new_window') {
+            const newWindowId = data.windowId;
+            if (!allWindowIds.includes(newWindowId)) {
+                allWindowIds.push(newWindowId);
+                localStorage.setItem('all_window_ids', JSON.stringify(allWindowIds));
+                updateWindowSelection();
+            }
+        } else if (data.type === 'window_closed') {
+            const closedWindowId = data.windowId;
+            allWindowIds = allWindowIds.filter(id => id!== closedWindowId);
+            localStorage.setItem('all_window_ids', JSON.stringify(allWindowIds));
+            delete windowNames[closedWindowId]; // 删除关闭窗口的名称
+            updateWindowSelection();
+        } else if (data.type === 'window_name') {
+            console.log(`接收到窗口 ${data.windowId} 名称更新为: ${data.windowName}`);
+windowNames[data.windowId] = data.windowName; // 更新窗口名称
+updateWindowSelection();
+} else if (data.type ==='request_window_names') {
+    if (windowName!== '等待名称加载') {
+        broadcastChannel.postMessage({ type: 'window_name', windowId: windowId, windowName: windowName });
+    }
+} else if (data.type ==='start_sync') {
+    const controlledWindows = JSON.parse(localStorage.getItem(CONTROLLED_WINDOWS_KEY) || '[]');
+    console.log(`当前窗口 ID: ${windowId}, 消息源窗口 ID: ${data.sourceWindowId}, 受控窗口列表: ${controlledWindows}`);
+    if (data.sourceWindowId!== windowId && controlledWindows.includes(windowId)) {
+        console.log('隐藏菜单，当前窗口为被控窗口');
+        isControlled = true;
+        startButton.disabled = true;
+        startButton.innerHTML = '正在被控';
+        if (windowSelectionDiv.style.display!== 'none') {
+            windowSelectionDiv.style.display = 'none';
+            console.log('已将菜单显示状态设置为 none');
+        }
+    }
+} else if (data.type ==='stop_sync') {
+    const controlledWindows = JSON.parse(localStorage.getItem(CONTROLLED_WINDOWS_KEY) || '[]');
+    console.log(`当前窗口 ID: ${windowId}, 消息源窗口 ID: ${data.sourceWindowId}, 受控窗口列表: ${controlledWindows}`);
+    if (data.isMaster && data.sourceWindowId!== windowId && controlledWindows.includes(windowId)) {
+        console.log('显示菜单，当前窗口为被控窗口，且是主控窗口发起的停止同步');
+        isControlled = false;
+        startButton.disabled = false;
+        startButton.innerHTML = '<i class="fas fa-play"></i> 开始同步';
+        if (windowSelectionDiv.style.display === 'none') {
+            windowSelectionDiv.style.display = 'block';
+            console.log('已将菜单显示状态设置为 block');
+        }
+    } else if (!data.isMaster && windowId === data.sourceWindowId) {
+        // 如果是被控窗口自己发起的停止同步，只重置自身状态，不更新其他窗口按钮文本
+        isSyncing = false;
+        isControlled = false;
+        startButton.disabled = false;
+        startButton.innerHTML = '<i class="fas fa-play"></i> 开始同步';
+        stopButton.disabled = true;
+        eventQueue.length = 0;
+        lastOperation = null;
+        clearTimeout(throttleTimer);
+        throttleTimer = null;
+        const checkboxes = windowSelectionDiv.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach((checkbox) => {
+            checkbox.disabled = false;
+        });
+    }
+} else {
+    const operation = data;
+    if (shouldReceiveOperation(operation) &&!isDuplicateOperation(operation)) {
+        console.log('接收到广播操作消息:', operation);
+        eventQueue.push(operation);
+        lastOperation = operation;
+        processEventQueue();
+    }
+}
+});
+
+// 捕获操作并存储到 localStorage
+document.addEventListener('click', function (event) {
+    if (isSyncing &&!isControlled) {
+        captureAndSyncOperation(event);
+    }
+});
+document.addEventListener('input', function (event) {
+    if (isSyncing &&!isControlled) {
+        captureAndSyncOperation(event);
+    }
+});
+document.addEventListener('keydown', function (event) {
+    if (isSyncing &&!isControlled) {
+        captureAndSyncOperation(event);
+    }
+    // 添加 F2 快捷键监听
+    if (event.key === 'F2') {
+        toggleMenuVisibility();
+    }
+});
+document.addEventListener('keyup', function (event) {
+    if (isSyncing &&!isControlled) {
+        captureAndSyncOperation(event);
+    }
+});
+
+function captureAndSyncOperation(event) {
+    if (eventBlacklist.includes(event.type)) {
+        return;
+    }
+    // 暂时移除节流逻辑
+    // if (throttleTimer) {
+    //     return;
+    // }
+    // throttleTimer = setTimeout(() => {
+    //     throttleTimer = null;
+    // }, THROTTLE_DELAY);
+
+    const target = event.target;
+    const operation = {
+        eventType: event.type,
+        sourceWindowId: windowId
+    };
+    if (event.type === 'click') {
+        // 记录绝对坐标
+        operation.clientX = event.clientX;
+        operation.clientY = event.clientY;
+    } else if (event.type === 'input') {
+        const selector = getUniqueSelector(target);
+        operation.selector = selector;
+        operation.value = target.value;
+    } else if (event.type === 'keydown' || event.type === 'keyup') {
+        operation.key = event.key;
+        operation.code = event.code;
+        operation.which = event.which;
+        operation.keyCode = event.keyCode;
+    }
+    try {
+        localStorage.setItem(SYNC_KEY, JSON.stringify(operation));
+        broadcastChannel.postMessage(operation);
+    } catch (error) {
+        console.error('捕获并同步操作时出错:', error);
+    }
+}
+
+function replayOperation(operation) {
+    if (operation.eventType === 'click') {
+        const clientX = operation.clientX;
+        const clientY = operation.clientY;
+
+        // 检查 window 对象是否具有必要的属性和方法
+        if (typeof window!== 'undefined' && window.document && typeof window.document.elementFromPoint === 'function') {
+            console.log('当前 window 对象有效，继续创建鼠标事件');
+            try {
+                const view = window.document.defaultView;
+                // 创建并触发 mousedown 事件
+                const mouseDownEvent = new MouseEvent('mousedown', {
+                    view: view,
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: clientX,
+                    clientY: clientY
+                });
+                const targetElement = document.elementFromPoint(clientX, clientY);
+                if (targetElement) {
+                    targetElement.dispatchEvent(mouseDownEvent);
+                }
+
+                // 创建并触发 mouseup 事件
+                const mouseUpEvent = new MouseEvent('mouseup', {
+                    view: view,
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: clientX,
+                    clientY: clientY
+                });
+                if (targetElement) {
+                    targetElement.dispatchEvent(mouseUpEvent);
+                }
+
+                // 创建并触发 click 事件
+                const clickEvent = new MouseEvent('click', {
+                    view: view,
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: clientX,
+                    clientY: clientY
+                });
+                if (targetElement) {
+                    targetElement.dispatchEvent(clickEvent);
+                }
+            } catch (error) {
+                console.error('创建鼠标事件时出错:', error);
+                console.log('window 对象信息:', window);
+            }
+        } else {
+            console.error('window 对象无效，无法创建鼠标事件');
+            console.log('window 对象信息:', window);
+        }
+    } else if (operation.eventType === 'input') {
+        const targetElement = document.querySelector(operation.selector);
+        if (targetElement) {
+            targetElement.focus();
+            targetElement.value = operation.value;
+            const inputEvent = new Event('input', {
+                bubbles: true,
+                cancelable: true
+            });
+            targetElement.dispatchEvent(inputEvent);
+        }
+    } else if (operation.eventType === 'keydown' || operation.eventType === 'keyup') {
+        const targetElement = document.activeElement;
+        if (targetElement) {
+            targetElement.focus();
+            const keyEvent = new KeyboardEvent(operation.eventType, {
+                key: operation.key,
+                code: operation.code,
+                which: operation.which,
+                keyCode: operation.keyCode,
+                bubbles: true,
+                cancelable: true
+            });
+            targetElement.dispatchEvent(keyEvent);
+        }
+    }
+}
+
+function shouldReceiveOperation(operation) {
+    const controlledWindows = JSON.parse(localStorage.getItem(CONTROLLED_WINDOWS_KEY) || '[]');
+    return controlledWindows.includes(windowId) && operation.sourceWindowId!== windowId;
+}
+
+function isDuplicateOperation(operation) {
+    if (!lastOperation) return false;
+    if (operation.eventType === 'keydown' || operation.eventType === 'keyup') {
+        return operation.eventType === lastOperation.eventType && operation.key === lastOperation.key;
+    }
+    return JSON.stringify(operation) === JSON.stringify(lastOperation);
+}
+
+function getUniqueSelector(element) {
+    const path = [];
+    while (element && element.nodeType === Node.ELEMENT_NODE) {
+        let selector = element.nodeName.toLowerCase();
+        if (element.id) {
+            selector += `#${element.id}`;
+        } else if (element.className) {
+            const classNames = element.className.trim().split(/\s+/);
+            classNames.forEach((className) => {
+                selector += `.${className}`;
+            });
+        }
+        // 添加元素在父节点中的索引信息
+        const siblings = Array.from(element.parentNode.children);
+        const index = siblings.indexOf(element);
+        if (index > 0) {
+            selector += `:nth-child(${index + 1})`;
+        }
+        path.unshift(selector);
+        element = element.parentNode;
+    }
+    return path.join(' > ');
+}
+
+function processEventQueue() {
+    if (eventQueue.length > 0) {
+        const operation = eventQueue.shift();
+        replayOperation(operation);
+        if (eventQueue.length > 0) {
+            processEventQueue();
+        }
+    }
+}
+
+// 切换菜单显示状态的函数
+function toggleMenuVisibility() {
+    if (buttonContainer.style.display === 'none') {
+        buttonContainer.style.display = 'flex';
+        windowSelectionDiv.style.display = 'block';
+    } else {
+        buttonContainer.style.display = 'none';
+        windowSelectionDiv.style.display = 'none';
+    }
+}
+})();</pre>
+            </div>
+            
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <div class="flex text-yellow-400 mr-3">
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star-o"></i>
+                </div>
+                <span class="text-sm text-gray-500">4.0 (256评价)</span>
+              </div>
+              <div>
+                <button class="btn-forum mr-2">查看详情</button>
+                <button class="btn-primary-action">复制代码</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 分页 -->
+      <div class="mt-10 flex justify-center">
+        <div class="flex space-x-2">
+          <button class="px-4 py-2 border border-gray-300 rounded hover:bg-primary hover:text-white hover:border-primary transition-colors">上一页</button>
+          <button class="px-4 py-2 bg-primary text-white rounded">1</button>
+          <button class="px-4 py-2 border border-gray-300 rounded hover:bg-primary hover:text-white hover:border-primary transition-colors">2</button>
+          <button class="px-4 py-2 border border-gray-300 rounded hover:bg-primary hover:text-white hover:border-primary transition-colors">3</button>
+          <button class="px-4 py-2 border border-gray-300 rounded hover:bg-primary hover:text-white hover:border-primary transition-colors">...</button>
+          <button class="px-4 py-2 border border-gray-300 rounded hover:bg-primary hover:text-white hover:border-primary transition-colors">12</button>
+          <button class="px-4 py-2 border border-gray-300 rounded hover:bg-primary hover:text-white hover:border-primary transition-colors">下一页</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 明星玩家展示区域 -->
+  <section id="players" class="py-16 bg-gray-50 hidden">
+    <div class="container mx-auto px-4">
+      <!-- 返回按钮 -->
+      <button onclick="showFeatures()" class="mb-6 flex items-center text-primary hover:text-secondary transition-colors">
+        <i class="fa fa-arrow-left mr-2"></i> 返回主菜单
+      </button>
+      
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10">
+        <div>
+          <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold">明星玩家</h2>
+          <p class="text-gray-600">认识游戏中最顶尖的玩家，了解他们的故事和技巧</p>
+        </div>
+        <div class="flex gap-3 mt-4 md:mt-0">
+          <div class="relative">
+            <input type="text" id="player-search" placeholder="搜索游戏ID或实名..." class="border border-gray-300 rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-primary">
+            <i class="fa fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 玩家分类标签 -->
+      <div class="flex flex-wrap gap-2 mb-8">
+        <button class="bg-primary text-white px-4 py-2 rounded-full text-sm">全部玩家</button>
+        <button class="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors">战术大师</button>
+        <button class="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors">狙击专家</button>
+        <button class="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors">团战核心</button>
+        <button class="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors">新晋黑马</button>
+        <button class="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors">赛事冠军</button>
+      </div>
+      
+      <!-- 玩家列表 -->
+      <div id="players-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 玩家1 -->
+        <div class="player-card" data-name="张伟" data-id="TankGod666">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1012/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Canfacy</h3>
+                <p class="text-gray-500 italic">实名: 王伟东</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">三届冠军</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">战术大师</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                3D坦克资深玩家，拥有2年游戏经验，擅长各种力度的咬人。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>在3D坦克百米逃跑中获得了第一名</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>连续12个月挨打记录排名第一</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>挨打找客服告状</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 玩家2 -->
+        <div class="player-card" data-name="李娜" data-id="LightningHunter">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://gitee.com/ClubTeam/TuPian/raw/master/xianghaodong.jpg" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">forgoodbiubiubiu</h3>
+                <p class="text-gray-500 italic">实名: 向浩东</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">速度之王</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">狙击专家</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                男性玩家中的极品，该玩家传闻有着不喝旺仔无法打游戏而闻名。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>截屏嘴炮</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>旺仔代言</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>双脑互搏</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 玩家3 -->
+        <div class="player-card" data-name="王强" data-id="IronFortress">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1025/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Treslyn.King</h3>
+                <p class="text-gray-500 italic">实名: 王一鸣</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">赛脸大师</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">团战核心</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                以赛脸意淫著称，擅长打嘴炮与挨打，是坦克游戏中不可或缺的人才。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>在2025年中获得创建小号数量第一名</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>赛脸与意淫</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>创造游戏史上愤怒速度最快的玩家称号</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 玩家4 -->
+        <div class="player-card" data-name="陈杰" data-id="StealthWarrior">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1074/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">x0</h3>
+                <p class="text-gray-500 italic">实名: 赵景瑞</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">伏击专家</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">战术大师</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                擅长隐蔽战术和突袭，能在敌人意想不到的地方发动致命攻击，但是遇到强者就会逃跑和装哑。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>2024年度最佳战术创新奖</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>单场最高15次伏击成功记录</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>《坦克伏击战术指南》作者</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 玩家5 -->
+        <div class="player-card" data-name="林小雨" data-id="RainbowSniper">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1062/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Zhi-Ge</h3>
+                <p class="text-gray-500 italic">实名: 郑智豪</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">精准射手</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">狙击专家</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                拥有惊人的咬合力，喜欢在人多的时候打嘴炮，如果战场就两个人那么你骂他他将不会还嘴。该玩家主打一个越人多越赛脸，越要画面。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>2025嘴炮大赛殿军</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>连续800发狙击全部未命中记录</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>开发意淫战斗法</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 玩家6 -->
+        <div class="player-card" data-name="赵刚" data-id="TankCommander">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1066/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Pardora</h3>
+                <p class="text-gray-500 italic">实名: 谷冯仁</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">战略指挥</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">团战核心</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                该玩家擅长军团战斗，技术和实力中等，没有更多信息可以介绍。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>录屏封自己游戏账号</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>缅北军团领导者</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>擅长"闪电战"团队战术体系</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 玩家7 -->
+        <div class="player-card" data-name="黄亮" data-id="NewStarRising">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1076/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Myanmar.B</h3>
+                <p class="text-gray-500 italic">实名: 尹奔</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">最快进步</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">新晋黑马</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                游戏时长仅1年的新秀玩家，但进步神速，展现出惊人的游戏天赋和学习能力。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>2024年度最佳新人奖</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>从青铜到钻石最快记录保持者</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>2025春季赛黑马奖</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 玩家8 -->
+        <div class="player-card" data-name="黄亮" data-id="NewStarRising">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1076/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">QBZ1140660N</h3>
+                <p class="text-gray-500 italic">实名: 袁科</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">最快进步</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">新晋黑马</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                该玩家酷爱炫耀和显眼，曾因秀出最强3D坦克游戏号而出名，后经核实账号属借来使用。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>逼王</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>实名上网</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>双重人格</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 玩家9 -->
+        <div class="player-card" data-name="黄亮" data-id="NewStarRising">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1076/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Legend_Hui</h3>
+                <p class="text-gray-500 italic">实名: 方锦辉</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">最快进步</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">新晋黑马</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                该玩家通过不懈努力，得到了挨打之王的称号，在特技中的表现更让人惊讶，有着小雷王的称号，因为该玩家击杀敌人全靠无脑脚本雷。并且打游戏时自己将自己的妈妈-罗秀英 爆出经常对自己家暴。让无数网友愤怒。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>2025年度小雷王</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>跑路最快记录保持者</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>实名上网典范玩家</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 玩家10 -->
+        <div class="player-card" data-name="黄亮" data-id="NewStarRising">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://gitee.com/ClubTeam/TuPian/raw/master/pengzixin.jpg" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Legend_Titan</h3>
+                <p class="text-gray-500 italic">实名: 彭子昕</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">最快进步</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">新晋黑马</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                最值得一提的玩家之一，该玩家曾因线下开直播真实别人，最后眼镜片都被打碎了。事后依然能安然无恙的在游戏中愉快的玩耍，值得大家学习的心态。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>真实反挨打第一人</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>3D坦克游戏玩家中最胖的玩家</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>石敦男</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 玩家11 -->
+        <div class="player-card" data-name="黄亮" data-id="NewStarRising">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1076/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Louis.Vuitton</h3>
+                <p class="text-gray-500 italic">实名: 未知</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">最快进步</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">新晋黑马</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                该玩家以朋友圈和QQ找人拼抢著称，在其他游戏中以十几块钱特效枪杀遍四方获得好评，但在坦克游戏中经常处于挨打，所以挨打时经常破防。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>脚本挂机之神</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>挨打跑路之王</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>诈骗犯之一</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- 玩家12 -->
+        <div class="player-card" data-name="黄亮" data-id="NewStarRising">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1076/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Passerby.King</h3>
+                <p class="text-gray-500 italic">实名: 李梦凡</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">最快进步</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">新晋黑马</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                该玩家自从被国服军团针对后，即抛弃国服而转到别的游戏中，偶尔国服上线打嘴炮。
+该玩家曾因赛脸和半夜三点山岗一个人练闪现而闻名四方。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>闪现王</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>持久度高</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>温度上升最快</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- 玩家11 -->
+        <div class="player-card" data-name="黄亮" data-id="NewStarRising">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://gitee.com/ClubTeam/TuPian/raw/master/liujialiang.jpg" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">King</h3>
+                <p class="text-gray-500 italic">实名: 刘佳良</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">最快进步</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">新晋黑马</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                该玩家爱吃卫龙辣条，曾找过某位坦克玩家借手机拍作业帮，借钱买军团卡闻名。
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>卫龙辣条代言人</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>作业帮代言人</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>借钱开团卡</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+        <!-- 玩家12 -->
+        <div class="player-card" data-name="吴敏" data-id="TankQueen">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <img src="https://picsum.photos/id/1069/100/100" alt="坦克玩家头像" class="w-20 h-20 rounded-full object-cover border-2 border-primary">
+                <div class="absolute -bottom-1 -right-1 bg-secondary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">PLH_2003</h3>
+                <p class="text-gray-500 italic">实名: 刘子华</p>
+                <div class="flex mt-1">
+                  <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded mr-2">全能选手</span>
+                  <span class="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded">赛事冠军</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h4 class="font-bold mb-2">个人简介</h4>
+              <p class="text-gray-600 text-sm mb-3">
+                老鼠型玩家，主打粘牙和装疯卖傻
+              </p>
+              
+              <h4 class="font-bold mb-2">主要成就</h4>
+              <ul class="text-gray-600 text-sm space-y-1">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>202粘牙</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>赛脸</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                  <span>装疯卖傻</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-user-plus mr-1"></i> 关注
+                </button>
+                <button class="text-primary hover:text-secondary transition-colors">
+                  <i class="fa fa-comment mr-1"></i> 私信
+                </button>
+              </div>
+              <button class="btn-forum py-1 px-3 text-sm">查看详情</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 实用工具区域 -->
+  <section id="tools" class="py-16 bg-gray-50 hidden">
+    <div class="container mx-auto px-4">
+      <!-- 返回按钮 -->
+      <button onclick="showFeatures()" class="mb-6 flex items-center text-primary hover:text-secondary transition-colors">
+        <i class="fa fa-arrow-left mr-2"></i> 返回主菜单
+      </button>
+      
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10">
+        <div>
+          <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold">实用工具</h2>
+          <p class="text-gray-600">提升3D坦克游戏体验的各种辅助工具和在线服务</p>
+        </div>
+      </div>
+      
+      <!-- 工具分类标签 -->
+      <div class="flex flex-wrap gap-2 mb-8">
+        <button class="bg-primary text-white px-4 py-2 rounded-full text-sm">全部工具</button>
+        <button class="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors">账号工具</button>
+        <button class="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors">战绩查询</button>
+        <button class="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors">坦克配置</button>
+        <button class="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors">游戏辅助</button>
+        <button class="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors">数据统计</button>
+      </div>
+      
+      <!-- 工具按钮区域 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <!-- 工具1 -->
+        <a href="https://picui.cn/upload" target="_blank" class="tool-button">
+          <i class="fa fa-calculator text-2xl"></i>
+          <span>图床</span>
+        </a>
+        
+        <!-- 工具2 -->
+        <a href="https://www.jyshare.com/front-end/3602/" target="_blank" class="tool-button">
+          <i class="fa fa-user-circle text-2xl"></i>
+          <span>UNICODE转换</span>
+        </a>
+        
+        <!-- 工具3 -->
+        <a href="https://snapany.com/zh/bilibili" target="_blank" class="tool-button">
+          <i class="fa fa-bar-chart text-2xl"></i>
+          <span>B站视频下载</span>
+        </a>
+        
+        <!-- 工具4 -->
+        <a href="https://try8.cn/tool/image/base64#google_vignette  " target="_blank" class="tool-button">
+          <i class="fa fa-cogs text-2xl"></i>
+          <span>图片转换Base64</span>
+        </a>
+        
+        <!-- 工具5 -->
+        <a href="https://www.tampermonkey.net/" target="_blank" class="tool-button">
+          <i class="fa fa-map text-2xl"></i>
+          <span>油猴</span>
+        </a>
+        
+        <!-- 工具6 -->
+        <a href="mailto:2084219003@qq.com" target="_blank" class="tool-button">
+          <i class="fa fa-users text-2xl"></i>
+          <span>联系我们</span>
+        </a>
+      </div>
+      
+      <!-- 工具使用说明 -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold mb-4">工具使用说明</h3>
+        
+        <div class="space-y-6">
+          <!-- 工具1说明 -->
+          <div>
+            <h4 class="font-bold text-lg mb-2 flex items-center">
+              <i class="fa fa-calculator text-primary mr-2"></i>
+              图床
+            </h4>
+            <p class="text-gray-600">
+              是一款速度快、不打扰、够安全、易于分享的图床，你可以在这里存储、管理和探索内容，尽情打造丰富的数字世界
+           </p>
+          </div>
+          
+          <!-- 工具2说明 -->
+          <div>
+            <h4 class="font-bold text-lg mb-2 flex items-center">
+              <i class="fa fa-user-circle text-primary mr-2"></i>
+              UNICODE转换
+            </h4>
+            <p class="text-gray-600">
+              本工具提供了在线 Unicode 编码转换，可以实现中文转 Unicode，Unicode 转中，ASCII 转 Unicode，Unicode 转 ASCII,在文本框里输入要转换的内容，然后点击要转换的类型按钮，转换完成后即可看到对应的内容
+            </p>
+          </div>
+          
+          <!-- 工具3说明 -->
+          <div>
+            <h4 class="font-bold text-lg mb-2 flex items-center">
+              <i class="fa fa-bar-chart text-primary mr-2"></i>
+              B站视频下载
+            </h4>
+            <p class="text-gray-600">
+              这里允许您下载哔哩哔哩的视频，您可以将视频链接直接复制到该网址来下载
+            </p>
+          </div>
+          
+          <!-- 工具4说明 -->
+          <div>
+            <h4 class="font-bold text-lg mb-2 flex items-center">
+              <i class="fa fa-cogs text-primary mr-2"></i>
+              图片转换Base64
+            </h4>
+            <p class="text-gray-600">
+              Base64/图片转换在线工具，图片转换Base64和Base64转换图片，上传任意图片，一键进行Base64字符串和图片互转，支持文件上传和下载
+            </p>
+          </div>
+          
+          <!-- 工具5说明 -->
+          <div>
+            <h4 class="font-bold text-lg mb-2 flex items-center">
+              <i class="fa fa-map text-primary mr-2"></i>
+              油猴
+            </h4>
+            <p class="text-gray-600">
+              油猴，又叫篡改猴。是一款允许网页加载JS的浏览器插件。这里是油猴的官网，可以直接进行插件的下载
+            </p>
+          </div>
+          
+          <!-- 工具6说明 -->
+          <div>
+            <h4 class="font-bold text-lg mb-2 flex items-center">
+              <i class="fa fa-users text-primary mr-2"></i>
+              联系我们
+            </h4>
+            <p class="text-gray-600">
+              这里您可以邮箱来直接与开发人员联系。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 快速发布区域 -->
+  <section class="py-12 bg-primary text-white">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-bold mb-2">有新的脚本想分享？</h2>
+          <p class="text-light">发布你的脚本，帮助更多玩家提升游戏体验</p>
+        </div>
+        <button class="btn-primary-action text-lg py-3 px-8 self-start md:self-auto">
+          <i class="fa fa-pencil mr-2"></i> 发布新脚本
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- JavaScript -->
+  <script>
+    // 导航栏滚动效果
+    window.addEventListener('scroll', function() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('py-2', 'shadow-lg');
+        navbar.classList.remove('py-3');
+      } else {
+        navbar.classList.add('py-3');
+        navbar.classList.remove('py-2', 'shadow-lg');
+      }
+    });
+    
+    // 移动端菜单切换
+    document.getElementById('menu-toggle').addEventListener('click', function() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.classList.toggle('hidden');
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          // 显示对应区域，隐藏其他区域
+          if (targetId === '#scripts') {
+            showScripts();
+          } else if (targetId === '#players') {
+            showPlayers();
+          } else if (targetId === '#tools') {
+            showTools();
+          } else if (targetId === '#home' || targetId === '#features') {
+            showFeatures();
+          }
+          
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+          
+          // 关闭移动菜单（如果打开）
+          document.getElementById('mobile-menu').classList.add('hidden');
+        }
+      });
+    });
+    
+    // 显示主功能区域
+    function showFeatures() {
+      document.getElementById('features').classList.remove('hidden');
+      document.getElementById('scripts').classList.add('hidden');
+      document.getElementById('players').classList.add('hidden');
+      document.getElementById('tools').classList.add('hidden');
+      
+      // 滚动到功能区域
+      document.getElementById('features').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+    
+    // 显示脚本分享区域
+    function showScripts() {
+      document.getElementById('features').classList.add('hidden');
+      document.getElementById('scripts').classList.remove('hidden');
+      document.getElementById('players').classList.add('hidden');
+      document.getElementById('tools').classList.add('hidden');
+      
+      // 滚动到脚本区域
+      document.getElementById('scripts').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+    
+    // 显示明星玩家区域
+    function showPlayers() {
+      document.getElementById('features').classList.add('hidden');
+      document.getElementById('scripts').classList.add('hidden');
+      document.getElementById('players').classList.remove('hidden');
+      document.getElementById('tools').classList.add('hidden');
+      
+      // 滚动到玩家区域
+      document.getElementById('players').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+    
+    // 显示实用工具区域
+    function showTools() {
+      document.getElementById('features').classList.add('hidden');
+      document.getElementById('scripts').classList.add('hidden');
+      document.getElementById('players').classList.add('hidden');
+      document.getElementById('tools').classList.remove('hidden');
+      
+      // 滚动到工具区域
+      document.getElementById('tools').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+    
+    // 复制代码功能
+    document.querySelectorAll('.btn-primary-action').forEach(button => {
+      if (button.textContent.includes('复制代码')) {
+        button.addEventListener('click', function() {
+          const codeBlock = this.closest('.script-card').querySelector('pre');
+          const code = codeBlock.textContent;
+          
+          navigator.clipboard.writeText(code).then(() => {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fa fa-check mr-1"></i> 已复制';
+            
+            setTimeout(() => {
+              this.innerHTML = originalText;
+            }, 2000);
+          });
+        });
+      }
+    });
+    
+    // 玩家搜索功能
+    document.getElementById('player-search').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const playerCards = document.querySelectorAll('.player-card');
+      
+      playerCards.forEach(card => {
+        const playerName = card.dataset.name.toLowerCase();
+        const playerId = card.dataset.id.toLowerCase();
+        
+        // 检查搜索词是否匹配玩家姓名或游戏ID
+        if (playerName.includes(searchTerm) || playerId.includes(searchTerm)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
